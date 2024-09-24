@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lu Shu Grid Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 50%;
+            margin: 50px auto;
+        }
+        input, button, select {
+            padding: 10px;
+            margin: 10px;
+            width: 80%;
+        }
+        button {
+            cursor: pointer;
+        }
+        #luShuGrid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .grid-box {
+            border: 1px solid #000;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Slider */
+        .slider {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .slides img {
+            width: 100%;
+            height: auto;
+        }
+        /* Loading Spinner */
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            margin-top: 20px;
+        }
+
+
+
+
+        .chat-icon {
+       position: fixed; bottom: 20px; right: 20px; cursor: pointer;
+        background: #0084ff; color: white; padding: 10px; border-radius: 50%;
+       }
+       .chat-popup {
+    display: none; position: fixed; bottom: 70px; right: 20px;
+    background: white; border: 1px solid #ccc; padding: 10px;
+    width: 250px; border-radius: 10px;
+       }
+       .chat-header { font-weight: bold; margin-bottom: 10px; }
+       button { display: block; width: 100%; margin: 5px 0; }
+ 
+
+    </style>
+</head>
+<body>
+    <!-- Slider (Step 1) -->
+    <div class="slider" id="slider">
+        <div class="slides">
+            <img src="https://www.shutterstock.com/image-vector/modern-astrology-banner-vintage-horoscope-600nw-2299485507.jpg" alt="Slide 1">
+            <img src="https://static.faqabout.me/cover/aesthetic-astrology-dbat1z9z5gyspsp4-jpg.jpg" alt="Slide 1">
+            
+        </div>
+    </div>
+
+  <!-- chat box -->
+    <div class="chat-icon" id="chat-icon">💬</div>
+<div class="chat-popup" id="chat-popup">
+    <div class="chat-header">Namaste! How can we help?</div>
+    <div class="chat-body">
+        <button onclick="location.href='#'">Support</button>
+        <button onclick="location.href='#'">Shopping</button>
+        <button onclick="location.href='#'">Order</button>
+        <button onclick="location.href='#'">Talk to Guru</button>
+        <button onclick="location.href='#'">More</button>
+    </div>
+</div>
+<!-- chat box -->
+
+
+    <div class="container">
+        <!-- Step 1: Enter Name -->
+        <div id="step1">
+            <h2>Step 1: Enter Your Name</h2>
+            <input type="text" id="nameInput" placeholder="Enter Your Name">
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- Step 2: Enter Date of Birth -->
+        <div id="step2" class="hidden">
+            <h2>Step 2: Enter Your Date of Birth</h2>
+            <input type="date" id="dobInput">
+            <label for="genderSelect">Select Gender:</label>
+            <select id="genderSelect">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+            <button onclick="showLoading()">Calculate</button>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="hidden">
+            <div class="loader"></div>
+            <p class="loading-text">We are preparing your personalized numerology report. Please wait a moment...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result" class="hidden">
+            <h2>नमस्कार <span id="resultName"></span>, ये हमने आपके नाम और जन्मदिनांक <span id="resultDOB"></span> के आधार पर ग्रिड चार्ट तैयार किया है!</h2>
+            <div id="totals"></div>
+            <h3>Lu Shu Grid:</h3>
+            <div id="luShuGrid"></div>
+            <div id="missingNumbers"></div>
+            <div id="availableNumbers"></div>
+            <div id="summary">
+                <p>Here is a summary of your numbers and their significance...</p>
+                <button onclick="window.location.href='summary-link.html'">Read More</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slides img');
+        function autoSlide() {
+            currentIndex = (currentIndex + 1) % slides.length;
+            document.querySelector('.slides').style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+        setInterval(autoSlide, 3000);
+
+        function nextStep() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function showLoading() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('loadingScreen').classList.remove('hidden');
+            setTimeout(calculate, 5000); // Wait for 5 seconds before calculating
+        }
+
+        function calculate() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+
+            var name = document.getElementById("nameInput").value;
+            var dob = document.getElementById("dobInput").value;
+
+            document.getElementById("resultName").textContent = name;
+            document.getElementById("resultDOB").textContent = dob;
+
+            // Existing calculation logic from your original script
+            var dobSum = getTotal(dob);
+            var moolank = getSingleDigitSum(dob.split("-")[2]); // Adjusted for date picker format
+            var bhagyank = getSingleDigitSum(dobSum);
+            var nameNum = calculateNameNumber(name.toUpperCase());
+            var kuaNum = calculateKuaNumber(dob, document.getElementById("genderSelect").value);
+
+            nameNum = reduceToSingleDigit(nameNum);
+
+            displayResults(moolank, bhagyank, nameNum, kuaNum);
+            generateLuShuGrid(dob.replaceAll("-", ""), moolank, bhagyank, nameNum, kuaNum);
+            displayMissingNumbers(dob.replaceAll("-", ""), moolank, bhagyank, nameNum, kuaNum);
+            displayAvailableNumbers(dob.replaceAll("-", ""), moolank, bhagyank, nameNum, kuaNum);
+        }
+
+        function getTotal(date) {
+            var parts = date.split("-");
+            var total = 0;
+            for (var i = 0; i < parts.length; i++) {
+                total += parseInt(parts[i]);
+            }
+            return total;
+        }
+
+        function getSingleDigitSum(number) {
+            while (number > 9) {
+                number = number.toString().split('').reduce((a, b) => parseInt(a) + parseInt(b), 0);
+            }
+            return number;
+        }
+
+        function calculateNameNumber(name) {
+            var sum = 0;
+            for (var i = 0; i < name.length; i++) {
+                sum += getNumberFromChar(name[i]);
+            }
+            return sum;
+        }
+
+        function getNumberFromChar(char) {
+            switch (char) {
+                case 'A': case 'I': case 'Q': case 'J': case 'Y': return 1;
+                case 'B': case 'K': case 'R': return 2;
+                case 'C': case 'G': case 'L': case 'S': return 3;
+                case 'D': case 'M': case 'T': return 4;
+                case 'E': case 'H': case 'N': case 'X': return 5;
+                case 'U': case 'V': case 'W': return 6;
+                case 'O': case 'Z': return 7;
+                case 'P': case 'F': return 8;
+                default: return 0;
+            }
+        }
+
+        function calculateKuaNumber(dob, gender) {
+            var year = dob.split("-")[0];
+            var sum = getSingleDigitSum(year);
+            var kuaNumber = (gender === 'male') ? 11 - sum : 4 + sum;
+            return kuaNumber;
+        }
+
+        function reduceToSingleDigit(number) {
+            return getSingleDigitSum(number);
+        }
+
+        function displayResults(moolank, bhagyank, nameNum, kuaNum) {
+            document.getElementById('totals').innerHTML = `
+                <p>Moolank: ${moolank}</p>
+                <p>Bhagyank: ${bhagyank}</p>
+                <p>Name Numerology Total: ${nameNum}</p>
+                <p>Kua Number: ${kuaNum}</p>
+            `;
+        }
+
+        function generateLuShuGrid(dobDigits, moolank, bhagyank, nameNum, kuaNum) {
+            let gridNumbers = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+            let gridHTML = '';
+            
+            for (let i = 0; i < gridNumbers.length; i++) {
+                let num = gridNumbers[i];
+                let content = '';
+
+                if (dobDigits.includes(num.toString())) {
+                    content += num;
+                }
+                if (moolank === num) content += `<br>${moolank}`;
+                if (bhagyank === num) content += `<br>${bhagyank}`;
+                if (nameNum === num) content += `<br>${nameNum}`;
+                if (kuaNum === num) content += `<br>${kuaNum}`;
+
+                gridHTML += `<div class="grid-box">${content}</div>`;
+            }
+
+            document.getElementById('luShuGrid').innerHTML = gridHTML;
+        }
+
+        function displayMissingNumbers(dobDigits, moolank, bhagyank, nameNum, kuaNum) {
+            let allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            let presentNumbers = dobDigits.split("").map(Number);
+            let additionalNumbers = [moolank, bhagyank, nameNum, kuaNum];
+            presentNumbers = presentNumbers.concat(additionalNumbers);
+            
+            let missingNumbers = allNumbers.filter(num => !presentNumbers.includes(num));
+            
+            const details = {
+                1: "Missing 1: Lack of independence, leadership, and confidence.",
+                2: "Missing 2: Difficulty in relationships and partnerships.",
+                3: "Missing 3: Lack of creativity and communication issues.",
+                4: "Missing 4: Struggle with discipline and stability.",
+                5: "Missing 5: Lack of adaptability and freedom.",
+                6: "Missing 6: Problems with responsibility and care for others.",
+                7: "Missing 7: Lack of spirituality and introspection.",
+                8: "Missing 8: Trouble with material success and authority.",
+                9: "Missing 9: Difficulty with compassion and global awareness."
+            };
+
+            let missingDetailsHTML = "<h3>Missing Numbers:</h3>";
+            missingNumbers.forEach(num => {
+                missingDetailsHTML += `<p>${num}: ${details[num]}</p>`;
+            });
+
+            document.getElementById('missingNumbers').innerHTML = missingDetailsHTML;
+        }
+
+        function displayAvailableNumbers(dobDigits, moolank, bhagyank, nameNum, kuaNum) {
+            let allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            let presentNumbers = dobDigits.split("").map(Number);
+            let additionalNumbers = [moolank, bhagyank, nameNum, kuaNum];
+            presentNumbers = presentNumbers.concat(additionalNumbers);
+            
+            let availableNumbers = allNumbers.filter(num => presentNumbers.includes(num));
+            
+            const details = {
+                1: "Available 1: Strong leadership, independence, and confidence.",
+                2: "Available 2: Cooperation, partnerships, and balance.",
+                3: "Available 3: Creativity, self-expression, and communication.",
+                4: "Available 4: Stability, discipline, and organization.",
+                5: "Available 5: Adaptability, freedom, and exploration.",
+                6: "Available 6: Responsibility, care for others, and family.",
+                7: "Available 7: Spirituality, introspection, and wisdom.",
+                8: "Available 8: Material success, authority, and power.",
+                9: "Available 9: Compassion, global awareness, and empathy."
+            };
+
+            let availableDetailsHTML = "<h3>Available Numbers:</h3>";
+            availableNumbers.forEach(num => {
+                availableDetailsHTML += `<p>${num}: ${details[num]}</p>`;
+            });
+
+            document.getElementById('availableNumbers').innerHTML = availableDetailsHTML;
+        }
+
+
+
+
+
+
+        document.getElementById('chat-icon').onclick = () => {
+    const chatPopup = document.getElementById('chat-popup');
+    chatPopup.style.display = chatPopup.style.display === 'block' ? 'none' : 'block';
+};
+
+    </script>
+</body>
+</html>
